@@ -59,13 +59,13 @@ class OledDisplay
     {
         byte newx = 4 + 6 * y;
         byte newy = 56 - 6 * x;
-        m_display.drawRect(newx, newy, 6, 6, white);
+        m_display.fillRect(newx, newy, 6, 6, white);
     }
 
   void OledDisplay::clearSquare(byte x, byte y) {
       byte newx = 4 + 6 * y;
       byte newy = 56 - 6 * x;
-      m_display.drawRect(newx, newy, 6, 6, black);
+      m_display.fillRect(newx, newy, 6, 6, black);
   }
 
     //Clears the entire screen
@@ -111,14 +111,17 @@ public:
     TetrisBoard* getBoard() {
       return this;
     }
-    void addBlock(byte xpos, byte ypos) {
-      arr[xpos][ypos] = true;
+    void addBlock(byte row, byte col) {
+      arr[row][col] = true;
     }
-    bool getBlockAt(byte xpos, byte ypos) {
-      return arr[xpos][ypos];
+    bool getBlockAt(byte row, byte col) {
+      if (row >= 10 || col >= 20 || row < 0 || col < 0) {
+        return true;
+      }
+      return arr[row][col];
     }
-    void removeBlock(byte xpos, byte ypos) {
-      arr[xpos][ypos] = false;
+    void removeBlock(byte row, byte col) {
+      arr[row][col] = false;
     }
     void removeRowAndShiftDown(byte row) {
       for (int i = 0; i < 10; i++) {
@@ -126,8 +129,8 @@ public:
       }
     }
     void renderToScreen() {
-      for (int row = 0; row < 20; row++) {
-        for (int col = 0; col < 10; col++) {
+      for (int row = 0; row < 10; row++) {
+        for (int col = 0; col < 20; col++) {
           if (arr[row][col]) {
             m_od->drawSquare(row, col);  
           }
@@ -140,7 +143,7 @@ public:
       m_od->render();
     }
 private:
-    bool arr[20][10];
+    bool arr[10][20];
     OledDisplay* m_od;
 };
 
@@ -149,10 +152,10 @@ private:
 // i, o, j, l, s, t, z
 
 bool i_piece[4][16] = {
-  {0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0}, 
   {0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0}, 
   {0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0}, 
-  {0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0}
+  {0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},
+  {0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0}
 };
 
 bool o_piece[4][16] {
@@ -208,7 +211,7 @@ public:
 
     switch (m_type) {
       case 0:
-        m_y = 0;
+        m_y = -2;
         m_contents = i_piece[0];
         break;
       case 1:
@@ -231,9 +234,29 @@ public:
         break;
     }
   }
-  void rotateLeft() {
-    
-    
+  bool canMoveLeft() {
+    byte index;
+    for (byte col = 3; col >= 0; col--) {
+      for (byte row = 0; row < 4; row++) {
+        index = row*4 + col;
+        if ((m_contents[index] && (m_tb->getBlockAt(row + m_x - 1, col + m_y) && !getBlock(row - 1, col))) || row + m_x <= 0) {
+           return false;
+        }
+      }
+    }
+    return true;
+  }
+  bool canMoveRight() {
+    byte index;
+    for (byte col = 3; col >= 0; col--) {
+      for (byte row = 0; row < 4; row++) {
+        index = row*4 + col;
+        if ((m_contents[index] && (m_tb->getBlockAt(row + m_x, col + m_y) && !getBlock(row, col + 1))) || row + m_x <= 0) {
+           return false;
+        }
+      }
+    }
+    return true;
   }
   byte getX() {
     return m_x;
@@ -241,11 +264,17 @@ public:
   byte getY() {
     return m_y;
   }
+
+  bool getBlock(byte row, byte col) {
+    if (row < 0 || row > 3 || col < 0 || col > 3) {
+      return false;
+    }
+    return m_contents[4*row + col];
+  }
   
   // renders contents to screen
   void render() {
     for (int i = 0; i < 16; i++) {
-      Serial.println("Iteration");
       if (m_contents[i] == true) {
         m_tb->addBlock(i % 4 + m_x, i / 4 + m_y);  
       }
@@ -360,31 +389,46 @@ void loop() {
 //      if (counter >= 6) {
 //        counter = 0;
 //      }
-      Tetromino* test;
-      if (1 == 1) {
-        test = new Tetromino(I_PIECE, &tb);
-      }
-      else {
-        test = new Tetromino(J_PIECE, &tb);
-      }
-
-      if (1 < 1) {
-        counter = 1;
-      }
-      else {
-        counter = 4;
-      }
+//      Tetromino* test;
+//      if (1 == 1) {
+//        test = new Tetromino(I_PIECE, &tb);
+//      }
+//      else {
+//        test = new Tetromino(J_PIECE, &tb);
+//      }
+//
+//      if (1 < 1) {
+//        counter = 1;
+//      }
+//      else {
+//        counter = 4;
+//      }
+//
+//      test->render();
+//      delay(500);
+//      Serial.print("Can it move left? ");
+//      Serial.println(test->canMoveLeft());
+//      Serial.print("Can it move right? ");
+//      Serial.println(test->canMoveRight());
+//      test->derender();
+//
+//      for (int i = 0; i < 20; i++) {
+//        for (int j = 0; j < 10; j++) {
+//          tb.addBlock(j, i);
+//        }
+//        
+//      }
       
-      Serial.println("Rendering");
-      test->render();
-      Serial.println("Finished Rendering");
-      delay(500);
-      Serial.println("Derendering");
-      test->derender();
-      Serial.println("Finished DeRendering");
-      delay(500);
+//      tb.removeBlock(1, 2);
+//      Serial.println(tb.getBlockAt(10, 2));
+//      Serial.println(tb.getBlockAt(1, 20));
 
-      delete test;
+      tb.addBlock(1, 2);
+      delay(1000);
+      tb.renderToScreen();
+
+      
+      
       
 //      counter++;
 }
