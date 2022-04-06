@@ -101,49 +101,44 @@ class OledDisplay
         m_display.drawPixel(x,y,black);
         m_display.display();
     }
-
 // THE TetrisBoard
 class TetrisBoard {
-public:
+  public:
     TetrisBoard(OledDisplay* od) {
       m_od = od;
     }
     TetrisBoard* getBoard() {
       return this;
     }
-    void addBlock(byte row, byte col) {
-      arr[row][col] = true;
+    void addBlock(byte x, byte y) {
+      arr[y][x] = true;
     }
-    bool getBlockAt(byte row, byte col) {
-      if (row >= 10 || col >= 20 || row < 0 || col < 0) {
+    bool getBlockAt(byte x, byte y) {
+      if (x >= 10 || y >= 20 || x < 0 || y < 0) {
         return true;
       }
-      return arr[row][col];
+      return arr[y][x];
     }
-    void removeBlock(byte row, byte col) {
-      arr[row][col] = false;
+    void removeBlock(int x, int y) {
+      arr[y][x] = false;
     }
-    void removeRowAndShiftDown(byte row) {
-      for (int i = 0; i < 10; i++) {
-        removeBlock(i, row);
-      }
-    }
+
     void renderToScreen() {
-      for (int row = 0; row < 10; row++) {
-        for (int col = 0; col < 20; col++) {
+      for (int row = 0; row < 20; row++) {
+        for (int col = 0; col < 10; col++) {
           if (arr[row][col]) {
-            m_od->drawSquare(row, col);  
+            m_od->drawSquare(col, row);
           }
           else {
-            m_od->clearSquare(row, col);
+            m_od->clearSquare(col, row);
           }
-          
+
         }
       }
       m_od->render();
     }
-private:
-    bool arr[10][20];
+  private:
+    bool arr[20][10];
     OledDisplay* m_od;
 };
 
@@ -152,152 +147,196 @@ private:
 // i, o, j, l, s, t, z
 
 bool i_piece[4][16] = {
-  {0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0}, 
-  {0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0}, 
-  {0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},
-  {0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0}
+  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0},
+  {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0},
+  {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0}
 };
 
 bool o_piece[4][16] {
-  {0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},
-  {0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},
-  {0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},
-  {0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0}
+  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0}
 };
 
 bool j_piece[4][16] = {
-  {0,0,0,0,1,1,1,0,0,0,1,0,0,0,0,0},
-  {0,1,0,0,0,1,0,0,1,1,0,0,0,0,0,0},
-  {1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-  {0,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0}
+  {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+  {0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0},
+  {1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}
 };
 
 bool l_piece[4][16] = {
-  {0,0,0,0,1,1,1,0,0,0,1,0,0,0,0,0},
-  {0,1,0,0,0,1,0,0,1,1,0,0,0,0,0,0},
-  {1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-  {0,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0}
+  {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+  {0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0},
+  {1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}
 };
 
 bool s_piece[4][16] = {
-  {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0},
-  {0,1,0,0,0,1,1,0,0,0,1,0,0,0,0,0},
-  {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0},
-  {0,1,0,0,0,1,1,0,0,0,1,0,0,0,0,0}
+  {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
+  {0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
+  {0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0}
 };
 
 bool t_piece[4][16] = {
-  {0,0,0,0,1,1,1,0,0,1,0,0,0,0,0,0},
-  {0,1,0,0,1,1,0,0,0,1,0,0,0,0,0,0},
-  {0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-  {0,1,0,0,0,1,1,0,0,1,0,0,0,0,0,0}
+  {0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+  {0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+  {0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0}
 };
 
 bool z_piece[4][16] = {
-  {0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0},
-  {0,0,1,0,0,1,1,0,0,1,0,0,0,0,0,0},
-  {0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0},
-  {0,0,1,0,0,1,1,0,0,1,0,0,0,0,0,0}
+  {0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
+  {0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
+  {0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0}
 };
 
 class Tetromino {
-public:
-  Tetromino(int type, TetrisBoard* tb, byte x = 4, byte y = -1, byte orientation = 0) {
-    m_type = type;
-    m_tb = tb;
-    m_x = x;
-    m_y = y;
-    m_orientation = orientation;
+  public:
+    Tetromino(int type, TetrisBoard* tb, byte x = 4, byte y = 0, byte orientation = 0) {
+      m_type = type;
+      m_tb = tb;
+      m_x = x;
+      m_y = y;
+      m_orientation = orientation;
 
-    switch (m_type) {
-      case 0:
-        m_y = -2;
-        m_contents = i_piece[0];
-        break;
-      case 1:
-        m_contents = o_piece[0];
-        break;
-      case 2:
-        m_contents = j_piece[0];
-        break;
-      case 3:
-        m_contents = l_piece[0];
-        break;
-      case 4:
-        m_contents = s_piece[0];
-        break;
-      case 5:
-        m_contents = t_piece[0];
-        break;
-      case 6:
-        m_contents = z_piece[0];
-        break;
+      switch (m_type) {
+        case 0:
+          m_y = -2;
+          m_contents = i_piece[0];
+          break;
+        case 1:
+          m_contents = o_piece[0];
+          break;
+        case 2:
+          m_contents = j_piece[0];
+          break;
+        case 3:
+          m_contents = l_piece[0];
+          break;
+        case 4:
+          m_contents = s_piece[0];
+          break;
+        case 5:
+          m_contents = t_piece[0];
+          break;
+        case 6:
+          m_contents = z_piece[0];
+          break;
+      }
     }
-  }
-  bool canMoveLeft() {
-    byte index;
-    for (byte col = 3; col >= 0; col--) {
-      for (byte row = 0; row < 4; row++) {
-        index = row*4 + col;
-        if ((m_contents[index] && (m_tb->getBlockAt(row + m_x - 1, col + m_y) && !getBlock(row - 1, col))) || row + m_x <= 0) {
-           return false;
+    bool canMoveLeft() {
+      // check row by row
+      for (int row = 0; row < 4; row+=1) {
+        for (int col = 0; col < 4; col+=1) {
+          if (m_contents[4 * row + col]) {
+            if (m_tb->getBlockAt(col + m_x - 1, row + m_y)) {
+              return false;
+            }
+            break;
+          }
         }
       }
+      return true;
     }
-    return true;
-  }
-  bool canMoveRight() {
-    byte index;
-    for (byte col = 3; col >= 0; col--) {
-      for (byte row = 0; row < 4; row++) {
-        index = row*4 + col;
-        if ((m_contents[index] && (m_tb->getBlockAt(row + m_x, col + m_y) && !getBlock(row, col + 1))) || row + m_x <= 0) {
-           return false;
+    
+    bool canMoveRight() {
+      // check row by row
+      for (int row = 0; row < 4; row+=1) {
+        for (int col = 3; col >= 0; col-=1) {
+          if (m_contents[4 * row + col]) {
+            if (m_tb->getBlockAt(col + m_x + 1, row + m_y)) {
+              return false;
+            }
+            break;
+          }
         }
       }
+      return true;
     }
-    return true;
-  }
-  byte getX() {
-    return m_x;
-  }
-  byte getY() {
-    return m_y;
-  }
 
-  bool getBlock(byte row, byte col) {
-    if (row < 0 || row > 3 || col < 0 || col > 3) {
-      return false;
+    bool canMoveDown() {
+      for (int col = 0; col < 4; col+=1) {
+        for (int row = 3; row >= 0; row-=1) {
+          if (m_contents[4 * row + col]) {
+            if (m_tb->getBlockAt(col + m_x, row + m_y + 1)) {
+              return false;
+            }
+            break;
+          }
+        }
+      }
+      return true;
     }
-    return m_contents[4*row + col];
-  }
-  
-  // renders contents to screen
-  void render() {
-    for (int i = 0; i < 16; i++) {
-      if (m_contents[i] == true) {
-        m_tb->addBlock(i % 4 + m_x, i / 4 + m_y);  
+    
+    void shiftRight() {
+      if (canMoveRight()) {
+        derender();
+        m_x++;
+        render();
       }
     }
-    m_tb->renderToScreen();
-  }
-  
-  // clears contents from screen
-  void derender() {
-    for (int i = 0; i < 16; i++) {
-      if (m_contents[i] == true) {
-        m_tb->removeBlock(i % 4 + m_x, i / 4 + m_y);  
+
+    void shiftLeft() {
+      if (canMoveLeft()) {
+        derender();
+        m_x--;
+        render();
       }
     }
-    m_tb->renderToScreen();
-  }
-private:
-  int m_type;
-  byte m_orientation;
-  byte m_x;
-  byte m_y;
-  bool* m_contents;
-  TetrisBoard* m_tb;
+
+    void shiftDown() {
+      if (canMoveDown()) {
+        derender();
+        m_y++;
+        render();
+      }
+    }
+    
+    byte getX() {
+      return m_x;
+    }
+    byte getY() {
+      return m_y;
+    }
+
+    bool getBlock(byte row, byte col) {
+      if (row < 0 || row > 3 || col < 0 || col > 3) {
+        return false;
+      }
+      return m_contents[4 * row + col];
+    }
+
+    // renders contents to screen
+    void render() {
+      for (int i = 0; i < 16; i++) {
+        if (m_contents[i] == true) {
+          m_tb->addBlock(i % 4 + m_x, i / 4 + m_y);
+        }
+      }
+      m_tb->renderToScreen();
+    }
+
+    // clears contents from screen
+    void derender() {
+      for (int i = 0; i < 16; i++) {
+        if (m_contents[i] == true) {
+          m_tb->removeBlock(i % 4 + m_x, i / 4 + m_y);
+        }
+      }
+      m_tb->renderToScreen();
+    }
+  private:
+    int m_type;
+    byte m_orientation;
+    byte m_x;
+    byte m_y;
+    bool* m_contents;
+    TetrisBoard* m_tb;
 };
 
 
@@ -325,7 +364,7 @@ int getJoyStickInput() {
     // Button Pressed
     return 4;
   }
-  
+
   // No joystick action
   return -1;
 }
@@ -334,27 +373,37 @@ int getJoyStickInput() {
 OledDisplay display;
 TetrisBoard tb = TetrisBoard(&display);
 
-
+unsigned long start_time; 
+unsigned long current_time; // millis() function returns unsigned long
+unsigned long tempo = 500;
 
 void setup() {
   // put your setup code here, to run once:
   display.begin();
   Serial.begin(9600);
   display.drawBoard();
-  delay(500); 
+  delay(500);
   pinMode(VRX, INPUT);
   pinMode(VRY, INPUT);
   pinMode(SW, INPUT_PULLUP);
-  
-  display.render();  
 
-  
-  
+  display.render();
+
+  current_time = millis();
+  start_time = current_time; 
+
 }
 
-int tempo = 500;
 int counter = 0;
 
+//joystick controls
+const int UP = 0;
+const int DOWN = 1;
+const int RIGHT = 2;
+const int LEFT = 3;
+const int PRESS = 4;
+
+//tet pieces
 const int I_PIECE = 0;
 const int O_PIECE = 1;
 const int J_PIECE = 2;
@@ -363,72 +412,33 @@ const int S_PIECE = 4;
 const int T_PIECE = 5;
 const int Z_PIECE = 6;
 
+Tetromino* test1 = new Tetromino(Z_PIECE, &tb);;
+
 void loop() {
-  // put your main code here, to run repeatedly:
-//  for (int a = 0; a < 20; a++) {
-//    for (int i = 0; i < 4; i++) {
-//      display.drawSquare(a, i);
-//    }
-//    // display.drawBoard();
-//    display.render();
-//    delay(1000);
-//    for (int i = 0; i < 4; i++) {
-//      display.clearSquare(a, i);
-//    }
-//  }
-
-//    for (byte i = 0; i < 5; i++) {
-//      tb.addBlock(i, 1);
-//      tb.renderToScreen();
-//      tb.removeBlock(i, 1); 
-//      delay(tempo); 
-//    }
-//    
-//    delay(tempo);
-//
-//      if (counter >= 6) {
-//        counter = 0;
-//      }
-//      Tetromino* test;
-//      if (1 == 1) {
-//        test = new Tetromino(I_PIECE, &tb);
-//      }
-//      else {
-//        test = new Tetromino(J_PIECE, &tb);
-//      }
-//
-//      if (1 < 1) {
-//        counter = 1;
-//      }
-//      else {
-//        counter = 4;
-//      }
-//
-//      test->render();
-//      delay(500);
-//      Serial.print("Can it move left? ");
-//      Serial.println(test->canMoveLeft());
-//      Serial.print("Can it move right? ");
-//      Serial.println(test->canMoveRight());
-//      test->derender();
-//
-//      for (int i = 0; i < 20; i++) {
-//        for (int j = 0; j < 10; j++) {
-//          tb.addBlock(j, i);
-//        }
-//        
-//      }
-      
-//      tb.removeBlock(1, 2);
-//      Serial.println(tb.getBlockAt(10, 2));
-//      Serial.println(tb.getBlockAt(1, 20));
-
-      tb.addBlock(1, 2);
-      delay(1000);
-      tb.renderToScreen();
-
-      
-      
-      
-//      counter++;
+  
+  current_time = millis();
+  
+  switch(getJoyStickInput()) {
+    case UP:
+      break;
+    case DOWN:
+      break;
+    case LEFT:
+      test1->shiftLeft();
+      delay(20);
+      break;
+    case RIGHT:
+      test1->shiftRight();
+      delay(20);
+      break;
+    case PRESS:
+      delete test1; 
+  }
+  
+  if (current_time - start_time >= tempo) {
+    test1->shiftDown();
+    start_time = current_time;
+  }
+  
+  
 }
