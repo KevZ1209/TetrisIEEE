@@ -148,21 +148,21 @@ class TetrisBoard {
 
 bool i_piece[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0};
 
-bool o_piece[16] = {0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0};
+bool o_piece[16] = {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0};
 
-bool j_piece[16] = {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+bool j_piece[16] = {1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-bool l_piece[16] = {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+bool l_piece[16] = {0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-bool s_piece[16] = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0};
+bool s_piece[16] = {0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-bool t_piece[16] = {0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+bool t_piece[16] = {0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-bool z_piece[16] = {0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
+bool z_piece[16] = {1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 class Tetromino {
   public:
-    Tetromino(TetrisBoard* tb, byte x = 4, byte y = 0, byte orientation = 0) {
+    Tetromino(TetrisBoard* tb, char x = 4, char y = 0, byte orientation = 0) {
       m_type = random(0, 7);
       m_tb = tb;
       m_x = x;
@@ -171,6 +171,7 @@ class Tetromino {
 
       switch (m_type) {
         case 0:
+          m_y = -2;
           m_contents = i_piece;
           break;
         case 1:
@@ -262,8 +263,39 @@ class Tetromino {
     }
 
     void rotateRight() {
-      bool arr[16];
-      arr[0] = arr[12];
+      derender();
+      if (m_type >= 2) {
+        m_contents[3] = m_contents[0];
+        m_contents[0] = m_contents[8];
+        m_contents[7] = m_contents[2];
+        m_contents[2] = m_contents[3];
+        m_contents[3] = m_contents[10];
+        m_contents[10] = m_contents[7];
+        m_contents[7] = m_contents[8];
+        m_contents[8] = m_contents[3];
+        m_contents[3] = m_contents[1];
+        m_contents[1] = m_contents[4];
+        m_contents[7] = m_contents[6];
+        m_contents[6] = m_contents[3];
+        m_contents[3] = m_contents[9];
+        m_contents[9] = m_contents[7];
+        m_contents[4] = m_contents[3];
+        m_contents[3] = 0;
+        m_contents[7] = 0;
+      }
+      else if (m_type == 0) {
+        m_contents[0] = m_contents[2];
+        m_contents[2] = m_contents[8];
+        m_contents[8] = m_contents[0];
+        m_contents[0] = m_contents[9];
+        m_contents[9] = m_contents[6];
+        m_contents[6] = m_contents[0];
+        m_contents[0] = m_contents[14];
+        m_contents[14] = m_contents[11];
+        m_contents[11] = m_contents[0];
+        m_contents[0] = 0;
+      }
+      render();
     }
     
     byte getX() {
@@ -302,8 +334,8 @@ class Tetromino {
   private:
     long m_type;
     byte m_orientation;
-    byte m_x;
-    byte m_y;
+    char m_x;
+    char m_y;
     bool* m_contents;
     TetrisBoard* m_tb;
 };
@@ -401,6 +433,10 @@ void loop() {
       case RIGHT:
         tet->shiftRight();
         delay(40);
+        break;
+       case PRESS:
+        tet->rotateRight();
+        delay(150);
         break;
     }
 
