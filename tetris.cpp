@@ -12,95 +12,95 @@
 
 class OledDisplay
 {
-    public:
-        OledDisplay(uint8_t w = 128, uint8_t h = 64, TwoWire *twi = &Wire, int8_t rst_pin = -1 );
-        void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC, uint8_t i2caddr = 0x3C);
-        void drawBoard();
-        void drawSquare(byte x, byte y);
-        void clearSquare(byte x, byte y);
-        void render() {
-          m_display.display();
-        }
-        void clearScreen();
-        void flashScreen();
-        void drawPixel(byte x, byte y);
-        void clearPixel(byte x, byte y);
-        OledDisplay* getDisplay() {
-          return this;
-        }
-    private:
-        Adafruit_SSD1306 m_display;
-        static const uint16_t white = SSD1306_WHITE;
-        static const uint16_t black = SSD1306_BLACK;
+  public:
+    OledDisplay(uint8_t w = 128, uint8_t h = 64, TwoWire *twi = &Wire, int8_t rst_pin = -1 );
+    void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC, uint8_t i2caddr = 0x3C);
+    void drawBoard();
+    void drawSquare(byte x, byte y);
+    void clearSquare(byte x, byte y);
+    void render() {
+      m_display.display();
+    }
+    void clearScreen();
+    void flashScreen();
+    void drawPixel(byte x, byte y);
+    void clearPixel(byte x, byte y);
+    OledDisplay* getDisplay() {
+      return this;
+    }
+  private:
+    Adafruit_SSD1306 m_display;
+    static const uint16_t white = SSD1306_WHITE;
+    static const uint16_t black = SSD1306_BLACK;
 
 
 };
 
-    OledDisplay::OledDisplay(uint8_t w, uint8_t h, TwoWire *twi, int8_t rst_pin)
-    {
-        m_display = Adafruit_SSD1306(w,h,twi,rst_pin);
-    }
+OledDisplay::OledDisplay(uint8_t w, uint8_t h, TwoWire *twi, int8_t rst_pin)
+{
+  m_display = Adafruit_SSD1306(w, h, twi, rst_pin);
+}
 
-    void OledDisplay::begin(uint8_t switchvcc,uint8_t i2caddr)
-    {
-        m_display.begin(switchvcc,i2caddr);
-        m_display.clearDisplay();
-        m_display.setTextColor(white);
-        m_display.setTextSize(2);
-    }
+void OledDisplay::begin(uint8_t switchvcc, uint8_t i2caddr)
+{
+  m_display.begin(switchvcc, i2caddr);
+  m_display.clearDisplay();
+  m_display.setTextColor(white);
+  m_display.setTextSize(2);
+}
 
-    void OledDisplay::drawBoard()
-    {
-        m_display.drawRect(3, 1, 122, 62, white);
-        m_display.display();
-    }
+void OledDisplay::drawBoard()
+{
+  m_display.drawRect(3, 1, 122, 62, white);
+  m_display.display();
+}
 
-    void OledDisplay::drawSquare(byte x, byte y)
-    {
-        byte newx = 4 + 6 * y;
-        byte newy = 56 - 6 * x;
-        m_display.fillRect(newx, newy, 6, 6, white);
-    }
+void OledDisplay::drawSquare(byte x, byte y)
+{
+  byte newx = 4 + 6 * y;
+  byte newy = 56 - 6 * x;
+  m_display.fillRect(newx, newy, 6, 6, white);
+}
 
-  void OledDisplay::clearSquare(byte x, byte y) {
-      byte newx = 4 + 6 * y;
-      byte newy = 56 - 6 * x;
-      m_display.fillRect(newx, newy, 6, 6, black);
+void OledDisplay::clearSquare(byte x, byte y) {
+  byte newx = 4 + 6 * y;
+  byte newy = 56 - 6 * x;
+  m_display.fillRect(newx, newy, 6, 6, black);
+}
+
+//Clears the entire screen
+void OledDisplay::clearScreen()
+{
+  m_display.clearDisplay();
+  m_display.display();
+}
+
+//Makes the screen flash by rapidly inverting colors. Good effect to add to a Game Over.
+void OledDisplay::flashScreen()
+{
+  bool toggle = false;
+  for (byte i = 0; i < 8; i++) {
+    toggle = !toggle;
+    m_display.invertDisplay(toggle);
+    delay(200);
   }
+}
 
-    //Clears the entire screen
-    void OledDisplay::clearScreen()
-    {
-        m_display.clearDisplay();
-        m_display.display();
-    }
+//Provided in case you really wanted to manually draw something, but if you want to do that
+//  I reccomend that you just use Adafruit_SSD1306 and Adafruit_GFX by themselves
+void OledDisplay::drawPixel(byte x, byte y)
+{
+  m_display.drawPixel(x, y, white);
+  m_display.display();
+}
 
-    //Makes the screen flash by rapidly inverting colors. Good effect to add to a Game Over.
-    void OledDisplay::flashScreen()
-    {
-        bool toggle = false;
-          for(byte i = 0; i < 8; i++){
-              toggle = !toggle;
-              m_display.invertDisplay(toggle);
-              delay(200);
-          }
-    }
-
-    //Provided in case you really wanted to manually draw something, but if you want to do that
-    //  I reccomend that you just use Adafruit_SSD1306 and Adafruit_GFX by themselves
-    void OledDisplay::drawPixel(byte x, byte y)
-    {
-        m_display.drawPixel(x,y,white);
-        m_display.display();
-    }
-    
-    //Provided in case you really wanted to manually draw something, but if you want to do that
-    //  I recommend that you just use Adafruit_SSD1306 and Adafruit_GFX by themselves
-    void OledDisplay::clearPixel(byte x, byte y)
-    {
-        m_display.drawPixel(x,y,black);
-        m_display.display();
-    }
+//Provided in case you really wanted to manually draw something, but if you want to do that
+//  I recommend that you just use Adafruit_SSD1306 and Adafruit_GFX by themselves
+void OledDisplay::clearPixel(byte x, byte y)
+{
+  m_display.drawPixel(x, y, black);
+  m_display.display();
+}
 // THE TetrisBoard
 class TetrisBoard {
   public:
@@ -146,59 +146,24 @@ class TetrisBoard {
 // 0, 1, 2, 3, 4, 5, 6
 // i, o, j, l, s, t, z
 
-bool i_piece[4][16] = {
-  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0},
-  {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0},
-  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0},
-  {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0}
-};
+bool i_piece[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0};
 
-bool o_piece[4][16] {
-  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-  {0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0}
-};
+bool o_piece[16] = {0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0};
 
-bool j_piece[4][16] = {
-  {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-  {0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-  {1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-  {0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}
-};
+bool j_piece[16] = {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0};
 
-bool l_piece[4][16] = {
-  {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-  {0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-  {1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-  {0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}
-};
+bool l_piece[16] = {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0};
 
-bool s_piece[4][16] = {
-  {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-  {0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-  {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-  {0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0}
-};
+bool s_piece[16] = {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0};
 
-bool t_piece[4][16] = {
-  {0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-  {0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-  {0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-  {0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0}
-};
+bool t_piece[16] = {0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0};
 
-bool z_piece[4][16] = {
-  {0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-  {0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-  {0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-  {0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0}
-};
+bool z_piece[16] = {0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
 
 class Tetromino {
   public:
-    Tetromino(int type, TetrisBoard* tb, byte x = 4, byte y = 0, byte orientation = 0) {
-      m_type = type;
+    Tetromino(TetrisBoard* tb, byte x = 4, byte y = 0, byte orientation = 0) {
+      m_type = random(0, 7);
       m_tb = tb;
       m_x = x;
       m_y = y;
@@ -206,33 +171,32 @@ class Tetromino {
 
       switch (m_type) {
         case 0:
-          m_y = -2;
-          m_contents = i_piece[0];
+          m_contents = i_piece;
           break;
         case 1:
-          m_contents = o_piece[0];
+          m_contents = o_piece;
           break;
         case 2:
-          m_contents = j_piece[0];
+          m_contents = j_piece;
           break;
         case 3:
-          m_contents = l_piece[0];
+          m_contents = l_piece;
           break;
         case 4:
-          m_contents = s_piece[0];
+          m_contents = s_piece;
           break;
         case 5:
-          m_contents = t_piece[0];
+          m_contents = t_piece;
           break;
         case 6:
-          m_contents = z_piece[0];
+          m_contents = z_piece;
           break;
       }
     }
     bool canMoveLeft() {
       // check row by row
-      for (int row = 0; row < 4; row+=1) {
-        for (int col = 0; col < 4; col+=1) {
+      for (int row = 0; row < 4; row += 1) {
+        for (int col = 0; col < 4; col += 1) {
           if (m_contents[4 * row + col]) {
             if (m_tb->getBlockAt(col + m_x - 1, row + m_y)) {
               return false;
@@ -243,11 +207,11 @@ class Tetromino {
       }
       return true;
     }
-    
+
     bool canMoveRight() {
       // check row by row
-      for (int row = 0; row < 4; row+=1) {
-        for (int col = 3; col >= 0; col-=1) {
+      for (int row = 0; row < 4; row += 1) {
+        for (int col = 3; col >= 0; col -= 1) {
           if (m_contents[4 * row + col]) {
             if (m_tb->getBlockAt(col + m_x + 1, row + m_y)) {
               return false;
@@ -260,8 +224,8 @@ class Tetromino {
     }
 
     bool canMoveDown() {
-      for (int col = 0; col < 4; col+=1) {
-        for (int row = 3; row >= 0; row-=1) {
+      for (int col = 0; col < 4; col += 1) {
+        for (int row = 3; row >= 0; row -= 1) {
           if (m_contents[4 * row + col]) {
             if (m_tb->getBlockAt(col + m_x, row + m_y + 1)) {
               return false;
@@ -272,7 +236,7 @@ class Tetromino {
       }
       return true;
     }
-    
+
     void shiftRight() {
       if (canMoveRight()) {
         derender();
@@ -295,6 +259,11 @@ class Tetromino {
         m_y++;
         render();
       }
+    }
+
+    void rotateRight() {
+      bool arr[16];
+      arr[0] = arr[12];
     }
     
     byte getX() {
@@ -331,7 +300,7 @@ class Tetromino {
       m_tb->renderToScreen();
     }
   private:
-    int m_type;
+    long m_type;
     byte m_orientation;
     byte m_x;
     byte m_y;
@@ -373,7 +342,7 @@ int getJoyStickInput() {
 OledDisplay display;
 TetrisBoard tb = TetrisBoard(&display);
 
-unsigned long start_time; 
+unsigned long start_time;
 unsigned long current_time; // millis() function returns unsigned long
 unsigned long tempo = 500;
 
@@ -390,7 +359,7 @@ void setup() {
   display.render();
 
   current_time = millis();
-  start_time = current_time; 
+  start_time = current_time;
 
 }
 
@@ -412,33 +381,40 @@ const int S_PIECE = 4;
 const int T_PIECE = 5;
 const int Z_PIECE = 6;
 
-Tetromino* test1 = new Tetromino(Z_PIECE, &tb);;
+Tetromino* tet = new Tetromino(&tb);
 
 void loop() {
-  
-  current_time = millis();
-  
-  switch(getJoyStickInput()) {
-    case UP:
-      break;
-    case DOWN:
-      break;
-    case LEFT:
-      test1->shiftLeft();
-      delay(20);
-      break;
-    case RIGHT:
-      test1->shiftRight();
-      delay(20);
-      break;
-    case PRESS:
-      delete test1; 
+
+  while (tet->canMoveDown()) {
+    current_time = millis();
+    switch (getJoyStickInput()) {
+      case UP:
+        break;
+      case DOWN:
+        tet->shiftDown();
+        delay(0);
+        break;
+      case LEFT:
+        tet->shiftLeft();
+        delay(40);
+        break;
+      case RIGHT:
+        tet->shiftRight();
+        delay(40);
+        break;
+    }
+
+    if (current_time - start_time >= 500) {
+      tet->shiftDown();
+      start_time = current_time;
+    }
   }
-  
-  if (current_time - start_time >= tempo) {
-    test1->shiftDown();
-    start_time = current_time;
+
+  delete tet;
+  tet = new Tetromino(&tb);
+  if (tet->canMoveDown() == false) {
+    display.flashScreen();
+    display.clearScreen();
+    exit(0);
   }
-  
-  
 }
