@@ -59,13 +59,13 @@ void OledDisplay::drawSquare(byte x, byte y)
 {
   byte newx = 4 + 6 * y;
   byte newy = 56 - 6 * x;
-  m_display.fillRect(newx, newy, 6, 6, white);
+  m_display.fillRect(newx+1, newy+1, 5, 5, white);
 }
 
 void OledDisplay::clearSquare(byte x, byte y) {
   byte newx = 4 + 6 * y;
   byte newy = 56 - 6 * x;
-  m_display.fillRect(newx, newy, 6, 6, black);
+  m_display.fillRect(newx+1, newy+1, 5, 5, black);
 }
 
 //Clears the entire screen
