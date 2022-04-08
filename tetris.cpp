@@ -1,7 +1,7 @@
 #define VRX A0
 #define VRY A1
 #define SW 2
-int score = 0;
+char score = 0;
 int actualScore = 0;
 
 // OLED DISPLAY CLASS
@@ -24,11 +24,6 @@ class OledDisplay
     }
     void clearScreen();
     void flashScreen();
-    void drawPixel(byte x, byte y);
-    void clearPixel(byte x, byte y);
-    OledDisplay* getDisplay() {
-      return this;
-    }
   private:
     Adafruit_SSD1306 m_display;
     static const uint16_t white = SSD1306_WHITE;
@@ -60,13 +55,13 @@ void OledDisplay::drawSquare(char x, char y)
 {
   char newx = 4 + 6 * y;
   char newy = 56 - 6 * x;
-  m_display.fillRect(newx+1, newy+1, 5, 5, white);
+  m_display.fillRect(newx + 1, newy + 1, 5, 5, white);
 }
 
 void OledDisplay::clearSquare(char x, char y) {
   char newx = 4 + 6 * y;
   char newy = 56 - 6 * x;
-  m_display.fillRect(newx+1, newy+1, 5, 5, black);
+  m_display.fillRect(newx + 1, newy + 1, 5, 5, black);
 }
 
 //Clears the entire screen
@@ -87,21 +82,6 @@ void OledDisplay::flashScreen()
   }
 }
 
-//Provided in case you really wanted to manually draw something, but if you want to do that
-//  I reccomend that you just use Adafruit_SSD1306 and Adafruit_GFX by themselves
-void OledDisplay::drawPixel(byte x, byte y)
-{
-  m_display.drawPixel(x, y, white);
-  m_display.display();
-}
-
-//Provided in case you really wanted to manually draw something, but if you want to do that
-//  I recommend that you just use Adafruit_SSD1306 and Adafruit_GFX by themselves
-void OledDisplay::clearPixel(byte x, byte y)
-{
-  m_display.drawPixel(x, y, black);
-  m_display.display();
-}
 // THE TetrisBoard
 class TetrisBoard {
   public:
@@ -149,8 +129,8 @@ class TetrisBoard {
     }
 
     void renderToScreen() {
-      for (int row = 0; row < 20; row++) {
-        for (int col = 0; col < 10; col++) {
+      for (byte row = 0; row < 20; row++) {
+        for (byte col = 0; col < 10; col++) {
           if (arr[row][col]) {
             m_od->drawSquare(col, row);
           }
@@ -227,8 +207,8 @@ class Tetromino {
 
     bool canMoveLeft() {
       // check row by row
-      for (int row = 0; row < 4; row += 1) {
-        for (int col = 0; col < 4; col += 1) {
+      for (char row = 0; row < 4; row += 1) {
+        for (char col = 0; col < 4; col += 1) {
           if (m_contents[4 * row + col]) {
             if (m_tb->getBlockAt(col + m_x - 1, row + m_y)) {
               return false;
@@ -242,8 +222,8 @@ class Tetromino {
 
     bool canMoveRight() {
       // check row by row
-      for (int row = 0; row < 4; row += 1) {
-        for (int col = 3; col >= 0; col -= 1) {
+      for (char row = 0; row < 4; row += 1) {
+        for (char col = 3; col >= 0; col -= 1) {
           if (m_contents[4 * row + col]) {
             if (m_tb->getBlockAt(col + m_x + 1, row + m_y)) {
               return false;
@@ -256,8 +236,8 @@ class Tetromino {
     }
 
     bool canMoveDown() {
-      for (int col = 0; col < 4; col += 1) {
-        for (int row = 3; row >= 0; row -= 1) {
+      for (char col = 0; col < 4; col += 1) {
+        for (char row = 3; row >= 0; row -= 1) {
           if (m_contents[4 * row + col]) {
             if (m_tb->getBlockAt(col + m_x, row + m_y + 1)) {
               return false;
@@ -314,7 +294,7 @@ class Tetromino {
         m_orientation = 0;
       }
 
-      for (int i = 0; i < 16; i++) {
+      for (byte i = 0; i < 16; i++) {
         temp[i] = m_contents[i];
       }
 
@@ -351,9 +331,9 @@ class Tetromino {
       }
 
       if (check) {
-        for (int i = 0; i < 16; i++) {
+        for (byte i = 0; i < 16; i++) {
           if (m_contents[i] && m_tb->getBlockAt(i % 4 + m_x, i / 4 + m_y)) {
-            for (int j = 0; j < 16; j++) {
+            for (byte j = 0; j < 16; j++) {
               m_contents[j] = temp[j];
             }
             m_orientation--;
@@ -445,7 +425,7 @@ TetrisBoard tb = TetrisBoard(&display);
 
 unsigned long start_time;
 unsigned long current_time; // millis() function returns unsigned long
-unsigned long tempo = 500;
+int tempo = 500;
 
 void setup() {
   // put your setup code here, to run once:
@@ -464,13 +444,6 @@ void setup() {
   randomSeed(analogRead(A2));
 }
 
-//joystick controls
-const char UP = 0;
-const char DOWN = 1;
-const char RIGHT = 2;
-const char LEFT = 3;
-const char PRESS = 4;
-
 //tet piece
 
 Tetromino* tet = nullptr;
@@ -480,39 +453,39 @@ void loop() {
   if (tet->canMoveDown() == false) {
     display.flashScreen();
     display.clearScreen();
-    //    Serial.println(score);
+    Serial.println(actualScore);
     exit(0);
   }
   while (tet->canMoveDown()) {
     current_time = millis();
     switch (getJoyStickInput()) {
-      case UP:
+      case 0:
         break;
-      case DOWN:
+      case 1:
         tet->shiftDown();
         delay(0);
         break;
-      case LEFT:
+      case 3:
         tet->shiftLeft();
         delay(40);
         break;
-      case RIGHT:
+      case 2:
         tet->shiftRight();
         delay(40);
         break;
-      case PRESS:
+      case 4:
         tet->rotateRight();
         delay(150);
         break;
     }
 
-    if (score%5==0 && score > 0) {
+    if (score % 5 == 0 && score > 0) {
       score = 0;
       if (tempo <= 100) {
-        
+
       }
       else {
-        tempo-=50;
+        tempo -= 50;
       }
     }
     if (current_time - start_time >= tempo) {
@@ -524,5 +497,5 @@ void loop() {
   tb.clearRows();
 
   delete tet;
-  
+
 }
