@@ -1,7 +1,7 @@
 #define VRX A0
 #define VRY A1
 #define SW 2
-
+int score = 0;
 
 // OLED DISPLAY CLASS
 
@@ -123,6 +123,29 @@ class TetrisBoard {
       arr[y][x] = false;
     }
 
+    bool isFilledRow(char row) {
+      for (char i = 0; i < 10; i++) {
+        if (arr[row][i] == false) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    void clearRows() {
+      for (char row = 0; row < 20; row++) {
+        while (isFilledRow(row)) {
+          for (char r = row; r >= 1; r--) {
+            for (char c = 0; c < 10; c++) {
+              arr[r][c] = arr[r - 1][c];
+            }
+          }
+          score++;
+        }
+      }
+      renderToScreen();
+    }
+
     void renderToScreen() {
       for (int row = 0; row < 20; row++) {
         for (int col = 0; col < 10; col++) {
@@ -160,14 +183,19 @@ bool t_piece[16] = {0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 bool z_piece[16] = {1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+
+
+bool temp[16];
+
 class Tetromino {
   public:
-    Tetromino(TetrisBoard* tb, char x = 4, char y = 0, byte orientation = 0) {
-      m_type = random(0, 7);
+    Tetromino(TetrisBoard* tb, long type, char x = 4, char y = 0) {
+      m_type = type;
+
       m_tb = tb;
       m_x = x;
       m_y = y;
-      m_orientation = orientation;
+      m_orientation = 0;
 
       switch (m_type) {
         case 0:
@@ -194,6 +222,7 @@ class Tetromino {
           break;
       }
     }
+
     bool canMoveLeft() {
       // check row by row
       for (int row = 0; row < 4; row += 1) {
@@ -262,9 +291,32 @@ class Tetromino {
       }
     }
 
-    void rotateRight() {
-      derender();
-      if (m_type >= 2) {
+    void rotateRight(bool check = true) {
+      if (check) {
+        derender();
+      }
+
+      if (m_orientation < 0) {
+        m_orientation = 3;
+      }
+      else if (m_orientation > 3) {
+        m_orientation = 0;
+      }
+
+      m_orientation++;
+
+      if (m_orientation < 0) {
+        m_orientation = 3;
+      }
+      else if (m_orientation > 3) {
+        m_orientation = 0;
+      }
+
+      for (int i = 0; i < 16; i++) {
+        temp[i] = m_contents[i];
+      }
+
+      if (m_type >= 2 && m_x >= 0 && m_x <= 7) {
         m_contents[3] = m_contents[0];
         m_contents[0] = m_contents[8];
         m_contents[7] = m_contents[2];
@@ -283,7 +335,7 @@ class Tetromino {
         m_contents[3] = 0;
         m_contents[7] = 0;
       }
-      else if (m_type == 0) {
+      else if (m_type == 0 && m_x >= 0 && m_x <= 6) {
         m_contents[0] = m_contents[2];
         m_contents[2] = m_contents[8];
         m_contents[8] = m_contents[0];
@@ -295,9 +347,24 @@ class Tetromino {
         m_contents[11] = m_contents[0];
         m_contents[0] = 0;
       }
-      render();
+
+      if (check) {
+        for (int i = 0; i < 16; i++) {
+          if (m_contents[i] && m_tb->getBlockAt(i % 4 + m_x, i / 4 + m_y)) {
+            for (int j = 0; j < 16; j++) {
+              m_contents[j] = temp[j];
+            }
+            m_orientation--;
+            break;
+          }
+        }
+        render();
+      }
+
+
+
     }
-    
+
     byte getX() {
       return m_x;
     }
@@ -333,7 +400,7 @@ class Tetromino {
     }
   private:
     long m_type;
-    byte m_orientation;
+    char m_orientation;
     char m_x;
     char m_y;
     bool* m_contents;
@@ -341,7 +408,7 @@ class Tetromino {
 };
 
 
-int getJoyStickInput() {
+char getJoyStickInput() {
   int vrxValue = analogRead(VRX);
   int vryValue = analogRead(VRY);
   int swValue = digitalRead(SW);
@@ -392,31 +459,28 @@ void setup() {
 
   current_time = millis();
   start_time = current_time;
-
+  randomSeed(analogRead(A2));
 }
 
-int counter = 0;
-
 //joystick controls
-const int UP = 0;
-const int DOWN = 1;
-const int RIGHT = 2;
-const int LEFT = 3;
-const int PRESS = 4;
+const char UP = 0;
+const char DOWN = 1;
+const char RIGHT = 2;
+const char LEFT = 3;
+const char PRESS = 4;
 
-//tet pieces
-const int I_PIECE = 0;
-const int O_PIECE = 1;
-const int J_PIECE = 2;
-const int L_PIECE = 3;
-const int S_PIECE = 4;
-const int T_PIECE = 5;
-const int Z_PIECE = 6;
+//tet piece
 
-Tetromino* tet = new Tetromino(&tb);
+Tetromino* tet = nullptr;
 
 void loop() {
-
+  tet = new Tetromino(&tb, random(0, 7));
+  if (tet->canMoveDown() == false) {
+    display.flashScreen();
+    display.clearScreen();
+    //    Serial.println(score);
+    exit(0);
+  }
   while (tet->canMoveDown()) {
     current_time = millis();
     switch (getJoyStickInput()) {
@@ -434,7 +498,7 @@ void loop() {
         tet->shiftRight();
         delay(40);
         break;
-       case PRESS:
+      case PRESS:
         tet->rotateRight();
         delay(150);
         break;
@@ -446,11 +510,8 @@ void loop() {
     }
   }
 
+  tb.clearRows();
+
   delete tet;
-  tet = new Tetromino(&tb);
-  if (tet->canMoveDown() == false) {
-    display.flashScreen();
-    display.clearScreen();
-    exit(0);
-  }
+
 }
