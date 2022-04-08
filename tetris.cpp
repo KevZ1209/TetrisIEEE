@@ -2,6 +2,7 @@
 #define VRY A1
 #define SW 2
 int score = 0;
+int actualScore = 0;
 
 // OLED DISPLAY CLASS
 
@@ -16,8 +17,8 @@ class OledDisplay
     OledDisplay(uint8_t w = 128, uint8_t h = 64, TwoWire *twi = &Wire, int8_t rst_pin = -1 );
     void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC, uint8_t i2caddr = 0x3C);
     void drawBoard();
-    void drawSquare(byte x, byte y);
-    void clearSquare(byte x, byte y);
+    void drawSquare(char x, char y);
+    void clearSquare(char x, char y);
     void render() {
       m_display.display();
     }
@@ -55,16 +56,16 @@ void OledDisplay::drawBoard()
   m_display.display();
 }
 
-void OledDisplay::drawSquare(byte x, byte y)
+void OledDisplay::drawSquare(char x, char y)
 {
-  byte newx = 4 + 6 * y;
-  byte newy = 56 - 6 * x;
+  char newx = 4 + 6 * y;
+  char newy = 56 - 6 * x;
   m_display.fillRect(newx+1, newy+1, 5, 5, white);
 }
 
-void OledDisplay::clearSquare(byte x, byte y) {
-  byte newx = 4 + 6 * y;
-  byte newy = 56 - 6 * x;
+void OledDisplay::clearSquare(char x, char y) {
+  char newx = 4 + 6 * y;
+  char newy = 56 - 6 * x;
   m_display.fillRect(newx+1, newy+1, 5, 5, black);
 }
 
@@ -141,6 +142,7 @@ class TetrisBoard {
             }
           }
           score++;
+          actualScore++;
         }
       }
       renderToScreen();
@@ -504,7 +506,16 @@ void loop() {
         break;
     }
 
-    if (current_time - start_time >= 500) {
+    if (score%5==0 && score > 0) {
+      score = 0;
+      if (tempo <= 100) {
+        
+      }
+      else {
+        tempo-=50;
+      }
+    }
+    if (current_time - start_time >= tempo) {
       tet->shiftDown();
       start_time = current_time;
     }
@@ -513,5 +524,5 @@ void loop() {
   tb.clearRows();
 
   delete tet;
-
+  
 }
