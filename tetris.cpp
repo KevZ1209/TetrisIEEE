@@ -61,7 +61,7 @@ void OledDisplay::drawSquare(char x, char y)
 void OledDisplay::clearSquare(char x, char y) {
   char newx = 4 + 6 * y;
   char newy = 56 - 6 * x;
-  m_display.fillRect(newx + 1, newy + 1, 5, 5, black);
+  m_display.fillRect(newx, newy, 6, 6, black);
 }
 
 //Clears the entire screen
@@ -177,7 +177,6 @@ class Tetromino {
       m_tb = tb;
       m_x = x;
       m_y = y;
-      m_orientation = 0;
 
       switch (m_type) {
         case 0:
@@ -273,26 +272,8 @@ class Tetromino {
       }
     }
 
-    void rotateRight(bool check = true) {
-      if (check) {
-        derender();
-      }
-
-      if (m_orientation < 0) {
-        m_orientation = 3;
-      }
-      else if (m_orientation > 3) {
-        m_orientation = 0;
-      }
-
-      m_orientation++;
-
-      if (m_orientation < 0) {
-        m_orientation = 3;
-      }
-      else if (m_orientation > 3) {
-        m_orientation = 0;
-      }
+    void rotateRight() {
+      derender();
 
       for (byte i = 0; i < 16; i++) {
         temp[i] = m_contents[i];
@@ -330,35 +311,17 @@ class Tetromino {
         m_contents[0] = 0;
       }
 
-      if (check) {
-        for (byte i = 0; i < 16; i++) {
-          if (m_contents[i] && m_tb->getBlockAt(i % 4 + m_x, i / 4 + m_y)) {
-            for (byte j = 0; j < 16; j++) {
-              m_contents[j] = temp[j];
-            }
-            m_orientation--;
-            break;
+
+      for (byte i = 0; i < 16; i++) {
+        if (m_contents[i] && m_tb->getBlockAt(i % 4 + m_x, i / 4 + m_y)) {
+          for (byte j = 0; j < 16; j++) {
+            m_contents[j] = temp[j];
           }
+
+          break;
         }
-        render();
       }
-
-
-
-    }
-
-    byte getX() {
-      return m_x;
-    }
-    byte getY() {
-      return m_y;
-    }
-
-    bool getBlock(byte row, byte col) {
-      if (row < 0 || row > 3 || col < 0 || col > 3) {
-        return false;
-      }
-      return m_contents[4 * row + col];
+      render();
     }
 
     // renders contents to screen
@@ -382,7 +345,6 @@ class Tetromino {
     }
   private:
     long m_type;
-    char m_orientation;
     char m_x;
     char m_y;
     bool* m_contents;
@@ -424,12 +386,13 @@ OledDisplay display;
 TetrisBoard tb = TetrisBoard(&display);
 
 unsigned long start_time;
-unsigned long current_time; // millis() function returns unsigned long
+// millis() function returns unsigned long
 int tempo = 500;
 
 void setup() {
   // put your setup code here, to run once:
   display.begin();
+  randomSeed(analogRead(A2));
   Serial.begin(9600);
   display.drawBoard();
   delay(500);
@@ -439,9 +402,8 @@ void setup() {
 
   display.render();
 
-  current_time = millis();
-  start_time = current_time;
-  randomSeed(analogRead(A2));
+  start_time = millis();
+
 }
 
 //tet piece
@@ -453,11 +415,17 @@ void loop() {
   if (tet->canMoveDown() == false) {
     display.flashScreen();
     display.clearScreen();
-    Serial.println(actualScore);
+    Serial.print(actualScore);
+    Serial.print('\n');
     exit(0);
   }
   while (tet->canMoveDown()) {
-    current_time = millis();
+
+    if (millis() - start_time >= tempo) {
+      tet->shiftDown();
+      start_time = millis();
+    }
+
     switch (getJoyStickInput()) {
       case 0:
         break;
@@ -467,11 +435,11 @@ void loop() {
         break;
       case 3:
         tet->shiftLeft();
-        delay(40);
+        delay(50);
         break;
       case 2:
         tet->shiftRight();
-        delay(40);
+        delay(50);
         break;
       case 4:
         tet->rotateRight();
@@ -479,8 +447,8 @@ void loop() {
         break;
     }
 
-    if (score % 5 == 0 && score > 0) {
-      score = 0;
+    if (score >= 5) {
+      score -= 5;
       if (tempo <= 100) {
 
       }
@@ -488,10 +456,7 @@ void loop() {
         tempo -= 50;
       }
     }
-    if (current_time - start_time >= tempo) {
-      tet->shiftDown();
-      start_time = current_time;
-    }
+
   }
 
   tb.clearRows();
