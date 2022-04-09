@@ -55,7 +55,7 @@ void OledDisplay::drawSquare(char x, char y)
 {
   char newx = 4 + 6 * y;
   char newy = 56 - 6 * x;
-  m_display.fillRect(newx + 1, newy + 1, 5, 5, white);
+  m_display.fillRect(newx + 1, newy + 1, 4, 4, white);
 }
 
 void OledDisplay::clearSquare(char x, char y) {
