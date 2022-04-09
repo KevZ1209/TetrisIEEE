@@ -47,7 +47,7 @@ void OledDisplay::begin(uint8_t switchvcc, uint8_t i2caddr)
 
 void OledDisplay::drawBoard()
 {
-  m_display.drawRect(3, 1, 122, 62, white);
+  m_display.drawRect(3, 1, 122, 63, white);
   m_display.display();
 }
 
@@ -55,7 +55,7 @@ void OledDisplay::drawSquare(char x, char y)
 {
   char newx = 4 + 6 * y;
   char newy = 56 - 6 * x;
-  m_display.fillRect(newx + 1, newy + 1, 4, 4, white);
+  m_display.fillRect(newx + 1, newy + 1, 5, 5, white);
 }
 
 void OledDisplay::clearSquare(char x, char y) {
