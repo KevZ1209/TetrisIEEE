@@ -22,6 +22,7 @@ class OledDisplay
     void render() {
       m_display.display();
     }
+
     void clearScreen();
     void flashScreen();
   private:
@@ -37,6 +38,8 @@ OledDisplay::OledDisplay(uint8_t w, uint8_t h, TwoWire *twi, int8_t rst_pin)
   m_display = Adafruit_SSD1306(w, h, twi, rst_pin);
 }
 
+
+
 void OledDisplay::begin(uint8_t switchvcc, uint8_t i2caddr)
 {
   m_display.begin(switchvcc, i2caddr);
@@ -47,7 +50,7 @@ void OledDisplay::begin(uint8_t switchvcc, uint8_t i2caddr)
 
 void OledDisplay::drawBoard()
 {
-  m_display.drawRect(3, 1, 122, 63, white);
+  m_display.drawRect(3, 1, 123, 63, white);
   m_display.display();
 }
 
@@ -161,13 +164,12 @@ bool l_piece[16] = {0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 bool s_piece[16] = {0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-bool t_piece[16] = {0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+bool t_piece[16] = {1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 bool z_piece[16] = {1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
 
-bool temp[16];
 
 class Tetromino {
   public:
@@ -275,11 +277,21 @@ class Tetromino {
     void rotateRight() {
       derender();
 
-      for (byte i = 0; i < 16; i++) {
-        temp[i] = m_contents[i];
-      }
+      if (m_type >= 2 && m_x >= 0) {
 
-      if (m_type >= 2 && m_x >= 0 && m_x <= 7) {
+        if ((m_contents[8] && m_tb->getBlockAt(m_x, m_y))
+            || (m_contents[4] && m_tb->getBlockAt(m_x + 1, m_y))
+            || (m_contents[0] && m_tb->getBlockAt(m_x + 2, m_y))
+            || (m_contents[9] && m_tb->getBlockAt(m_x, m_y + 1))
+            || (m_contents[5] && m_tb->getBlockAt(m_x + 1, m_y + 1))
+            || (m_contents[1] && m_tb->getBlockAt(m_x + 2, m_y + 1))
+            || (m_contents[10] && m_tb->getBlockAt(m_x, m_y + 2))
+            || (m_contents[6] && m_tb->getBlockAt(m_x + 1, m_y + 2))
+            || (m_contents[2] && m_tb->getBlockAt(m_x + 2, m_y + 2))) {
+          render();
+          return;
+        }
+
         m_contents[3] = m_contents[0];
         m_contents[0] = m_contents[8];
         m_contents[7] = m_contents[2];
@@ -299,6 +311,19 @@ class Tetromino {
         m_contents[7] = 0;
       }
       else if (m_type == 0 && m_x >= 0 && m_x <= 6) {
+
+        if ((m_contents[8] && m_tb->getBlockAt(m_x + 2, m_y))
+            || (m_contents[9] && m_tb->getBlockAt(m_x + 2, m_y + 1))
+            || (m_contents[10] && m_tb->getBlockAt(m_x + 2, m_y + 2))
+            || (m_contents[11] && m_tb->getBlockAt(m_x + 2, m_y + 3))
+            || (m_contents[2] && m_tb->getBlockAt(m_x, m_y + 2))
+            || (m_contents[6] && m_tb->getBlockAt(m_x + 1, m_y + 2))
+            || (m_contents[14] && m_tb->getBlockAt(m_x + 3, m_y + 2))) {
+          render();
+          return;
+        }
+
+
         m_contents[0] = m_contents[2];
         m_contents[2] = m_contents[8];
         m_contents[8] = m_contents[0];
@@ -309,17 +334,6 @@ class Tetromino {
         m_contents[14] = m_contents[11];
         m_contents[11] = m_contents[0];
         m_contents[0] = 0;
-      }
-
-
-      for (byte i = 0; i < 16; i++) {
-        if (m_contents[i] && m_tb->getBlockAt(i % 4 + m_x, i / 4 + m_y)) {
-          for (byte j = 0; j < 16; j++) {
-            m_contents[j] = temp[j];
-          }
-
-          break;
-        }
       }
       render();
     }
@@ -417,6 +431,7 @@ void loop() {
     display.clearScreen();
     Serial.print(actualScore);
     Serial.print('\n');
+
     exit(0);
   }
   while (tet->canMoveDown()) {
