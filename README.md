@@ -1,5 +1,5 @@
-# TetrisIEEE
-Tetris for the Arduino Nano using an Adafruit OLED display. Lots of strange, yet effective optimizations to meet the 1KB memory constraint
+# Tetris
+Tetris for the Arduino Nano using an Adafruit OLED display. Strange, yet effective optimizations to meet the 1KB memory constraint
 
 
 # Instructions
